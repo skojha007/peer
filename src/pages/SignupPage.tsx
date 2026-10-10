@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../lib/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import {
@@ -36,7 +37,10 @@ export const SignupPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showRewardModal, setShowRewardModal] = useState(false);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const { configured, signUp } = useAuth();
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -55,11 +59,31 @@ export const SignupPage: React.FC = () => {
       return;
     }
 
+    if (configured) {
+      setIsLoading(true);
+      const result = await signUp({
+        email, password, fullName, college, branch, academicYear,
+        githubUrl, linkedinUrl, leetcodeUrl, hackerrankUrl,
+      });
+      setIsLoading(false);
+      if (result.error) {
+        setErrorMsg(result.error);
+        return;
+      }
+      if (result.needsEmailConfirmation) {
+        setNeedsConfirm(true);
+        return;
+      }
+      navigate('/dashboard');
+      return;
+    }
+
     setIsLoading(true);
 
     setTimeout(() => {
       setIsLoading(false);
 
+      // Demo mode only. Skills start unverified; nothing here is a verification.
       // Create new user profile with 1,000 starting credits
       const newUser: UserProfile = {
         id: `usr_${Date.now()}`,
@@ -76,8 +100,8 @@ export const SignupPage: React.FC = () => {
         profileVisibility: 'public',
         interests: ['Full-Stack', 'Algorithms', 'Collaboration'],
         skills: [
-          { name: 'JavaScript', proficiency: 'Intermediate', verified: true },
-          { name: 'Git', proficiency: 'Intermediate', verified: true },
+          { name: 'JavaScript', proficiency: 'Intermediate', verified: false },
+          { name: 'Git', proficiency: 'Intermediate', verified: false },
         ],
         githubUrl: githubUrl || undefined,
         linkedinUrl: linkedinUrl || undefined,
@@ -131,6 +155,11 @@ export const SignupPage: React.FC = () => {
           </div>
         )}
 
+        {needsConfirm && (
+          <div className="p-3 rounded-btn bg-[#EAF1DC] text-[#173D2A] text-xs font-semibold">
+            Account created. Check your email to confirm your address, then sign in.
+          </div>
+        )}
         <form onSubmit={handleSignup} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
+import { AuthProvider, useAuth } from './lib/auth';
 import { AppLayout } from './components/layout/AppLayout';
 
 // Pages
@@ -28,8 +29,24 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
+/** Redirects to /login when Supabase is configured and there is no session. */
+const RequireAuth: React.FC = () => {
+  const { configured, loading, session } = useAuth();
+  if (!configured) return <AppLayout />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-[#687769]">
+        Loading your workspace...
+      </div>
+    );
+  }
+  if (!session) return <Navigate to="/login" replace />;
+  return <AppLayout />;
+};
+
 export const App: React.FC = () => {
   return (
+    <AuthProvider>
     <AppProvider>
       <BrowserRouter>
         <Routes>
@@ -40,7 +57,7 @@ export const App: React.FC = () => {
           <Route path="/onboarding" element={<OnboardingPage />} />
 
           {/* Authenticated Workspace Layout */}
-          <Route element={<AppLayout />}>
+          <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -86,6 +103,7 @@ export const App: React.FC = () => {
         </Routes>
       </BrowserRouter>
     </AppProvider>
+    </AuthProvider>
   );
 };
 

@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { initialUser, adminUser } from '../data/mockData';
+import { useAuth } from '../lib/auth';
 
 export const LoginPage: React.FC = () => {
   const { switchUser } = useApp();
+  const { configured, signIn } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('aryan.sharma@campus.edu');
@@ -23,8 +25,23 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+
+    if (configured) {
+      setIsLoading(true);
+      const { error } = await signIn(email, password);
+      setIsLoading(false);
+      if (error) {
+        setErrorMsg(error);
+        return;
+      }
+      navigate('/dashboard');
+      return;
+    }
+
+    // Demo mode: Supabase is not configured in this build.
     setIsLoading(true);
 
     setTimeout(() => {
@@ -63,6 +80,11 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
+        {!configured && (
+          <div className="p-3 rounded-btn bg-[#FFF6DD] text-[#6B4E00] text-xs font-semibold">
+            Demo mode: Supabase is not configured, so sign-in is simulated and no data is saved.
+          </div>
+        )}
         {errorMsg && (
           <div className="bg-[#D94A4A]/10 border border-[#D94A4A]/30 text-[#D94A4A] p-3 rounded-xl text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
