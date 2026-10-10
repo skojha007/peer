@@ -8,6 +8,7 @@ import {
 } from '../lib/portfolio';
 import { PROFICIENCIES, canRequestReview, type Proficiency } from '../lib/verification';
 import type { SkillEntry, Achievement, PortfolioProject } from '../types/portfolio';
+import { InsightsCard } from '../components/portfolio/InsightsCard';
 import {
   VerificationBadge, Loading, ErrorBanner, SuccessBanner, EmptyState, SetupNotice,
   Card, PrimaryButton, SecondaryButton, DangerButton, Field, inputClass,
@@ -107,6 +108,8 @@ export const SkillPassportPage: React.FC = () => {
             <DnaRow label="Strengths (Advanced or Expert)" items={dna.strengths} empty="Set a skill to Advanced or Expert to list it here." />
             <DnaRow label="Learning next" items={dna.goals} empty="Mark skills as learning goals to track them." />
           </Card>
+
+          <InsightsCard />
 
           <SkillsSection
             userId={user!.id}

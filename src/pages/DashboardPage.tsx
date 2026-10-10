@@ -454,7 +454,7 @@ export const DashboardPage: React.FC = () => {
             <div>
               <h2 className="text-lg font-bold text-[#173D2A]">Recommended Teammates</h2>
               <p className="text-xs text-[#687769]">
-                Compatibility calculated from verified skills, branch, and role interests.
+                Matches are calculated from real skills and project requirements.
               </p>
             </div>
             <Link
@@ -465,71 +465,9 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          <div className="space-y-3">
-            {otherStudents.slice(0, 3).map((student, idx) => {
-              const matchScore = idx === 0 ? 96 : idx === 1 ? 92 : 88;
-              const matchReason =
-                idx === 0
-                  ? 'Strong UI/UX design match for Campus Navigation App'
-                  : idx === 1
-                  ? 'Hardware & IoT specialist for sensor automation'
-                  : 'Machine learning & Python pipelines contributor';
-
-              return (
-                <div
-                  key={student.id}
-                  className="bg-[#FAFCF5] border border-[#DCE6D2] rounded-card p-4 hover:border-[#26783C]/40 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={student.avatarUrl}
-                      alt={student.fullName}
-                      className="w-11 h-11 rounded-full object-cover border border-[#26783C]/30 flex-shrink-0"
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-[#173D2A]">{student.fullName}</span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#E4EDCF] text-[#173D2A]">
-                          {matchScore}% Match
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-[#687769]">
-                        {student.branch} • {student.academicYear}
-                      </div>
-                      <div className="text-[11px] text-[#26783C] font-medium mt-0.5 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-[#EFC66B]" />
-                        <span>{matchReason}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {student.skills.slice(0, 3).map((s, sIdx) => (
-                          <span
-                            key={sIdx}
-                            className="text-[10px] px-1.5 py-0.5 rounded bg-[#EAF1DC] text-[#1D3024]"
-                          >
-                            {s.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
-                    <Link
-                      to={`/users/${student.id}`}
-                      className="flex-1 sm:flex-initial px-3 py-1.5 border border-[#DCE6D2] hover:bg-[#EAF1DC] text-[#173D2A] rounded-btn text-xs font-semibold text-center transition-colors"
-                    >
-                      View Profile
-                    </Link>
-                    <button
-                      onClick={() => handleSendInvite(student.fullName)}
-                      className="flex-1 sm:flex-initial px-3 py-1.5 bg-[#26783C] hover:bg-[#1C622F] text-white rounded-btn text-xs font-semibold text-center transition-colors"
-                    >
-                      Invite
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="bg-[#FAFCF5] border border-dashed border-[#DCE6D2] rounded-card p-5 text-sm text-[#4B5A4D] space-y-3">
+            <p>Team matches are calculated from each student's real Skill Passport and your project requirements. Open Team Finder to see them.</p>
+            <Link to="/team-finder" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#173D2A] text-white text-xs font-bold rounded-btn hover:bg-[#102B20]">Open Team Finder</Link>
           </div>
         </section>
 

@@ -19,6 +19,7 @@ export interface PortfolioProject {
   technologies: string[];
   status: PortfolioProjectStatus;
   progress: number;
+  maxMembers: number;
   visibility: 'public' | 'private';
   repoUrl: string | null;
   liveDemoUrl: string | null;

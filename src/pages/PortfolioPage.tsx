@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Globe, Lock, Share2, Copy, Check, FolderKanban, ExternalLink, BadgeCheck } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { listProjectsForUser, getMyProfile, setProfileVisibility } from '../lib/portfolio';
+import { listProjectsForUser, getMyProfile, setProfileVisibility, listIncomingInvitations, respondToInvitation, type InvitationRow } from '../lib/portfolio';
 import type { PortfolioProject } from '../types/portfolio';
-import { VerificationBadge, TechTags, Loading, ErrorBanner, EmptyState, SetupNotice, Card, PrimaryButton, SecondaryButton } from '../components/portfolio/ui';
+import { VerificationBadge, TechTags, Loading, ErrorBanner, SuccessBanner, EmptyState, SetupNotice, Card, PrimaryButton, SecondaryButton } from '../components/portfolio/ui';
 
 export const PortfolioPage: React.FC = () => {
   const { configured, user } = useAuth();
@@ -14,14 +14,19 @@ export const PortfolioPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [invites, setInvites] = useState<InvitationRow[]>([]);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError(null);
     try {
-      const [list, profile] = await Promise.all([listProjectsForUser(user.id), getMyProfile(user.id)]);
+      const [list, profile, incoming] = await Promise.all([
+        listProjectsForUser(user.id), getMyProfile(user.id), listIncomingInvitations(user.id),
+      ]);
       setProjects(list);
+      setInvites(incoming);
       setVisibility(profile.profileVisibility);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load your portfolio.');
@@ -36,6 +41,18 @@ export const PortfolioPage: React.FC = () => {
   }, [configured, load]);
 
   if (!configured) return <SetupNotice />;
+
+  const answer = async (inv: InvitationRow, accept: boolean) => {
+    setError(null);
+    setSuccess(null);
+    try {
+      await respondToInvitation(inv.id, accept);
+      setSuccess(accept ? `You joined ${inv.projectTitle} as ${inv.role}.` : `Declined the invitation to ${inv.projectTitle}.`);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not respond to the invitation.');
+    }
+  };
 
   const shareUrl = user ? `${window.location.origin}/portfolio/${user.id}` : '';
 
@@ -115,6 +132,27 @@ export const PortfolioPage: React.FC = () => {
       </Card>
 
       <ErrorBanner message={error} onRetry={load} />
+      <SuccessBanner message={success} />
+
+      {invites.length > 0 && (
+        <Card className="space-y-3">
+          <h2 className="text-sm font-extrabold text-[#173D2A]">Team invitations</h2>
+          <ul className="divide-y divide-[#DCE6D2]">
+            {invites.map((inv) => (
+              <li key={inv.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#173D2A]">{inv.projectTitle}</p>
+                  <p className="text-xs text-[#687769]">Role: {inv.role}{inv.message ? ` · "${inv.message}"` : ''}</p>
+                </div>
+                <div className="flex gap-2">
+                  <PrimaryButton onClick={() => answer(inv, true)}>Accept</PrimaryButton>
+                  <SecondaryButton onClick={() => answer(inv, false)}>Decline</SecondaryButton>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {loading ? <Loading label="Loading your projects..." /> : projects.length === 0 ? (
         <EmptyState

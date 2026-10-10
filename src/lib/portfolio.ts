@@ -60,6 +60,7 @@ function mapProject(r: Row): PortfolioProject {
     technologies: r.technologies ?? [],
     status: asProjectStatus(r.status),
     progress: r.progress ?? 0,
+    maxMembers: r.max_members ?? 4,
     visibility: r.visibility === 'private' ? 'private' : 'public',
     repoUrl: r.repo_url ?? null,
     liveDemoUrl: r.live_demo_url ?? null,
@@ -516,4 +517,133 @@ export async function listPendingReviews(): Promise<ReviewItem[]> {
     })),
   ];
   return items.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+}
+
+/* ---------- team invitations and Team Finder ---------- */
+
+export interface InvitationRow {
+  id: string;
+  projectId: string;
+  projectTitle: string;
+  invitedUserId: string;
+  invitedUserName: string;
+  invitedBy: string;
+  role: string;
+  message: string;
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
+  createdAt: string;
+}
+
+function mapInvitation(r: Row): InvitationRow {
+  return {
+    id: r.id,
+    projectId: r.project_id,
+    projectTitle: r.projects?.title ?? 'Project',
+    invitedUserId: r.invited_user_id,
+    invitedUserName: r.invitee?.full_name ?? 'Student',
+    invitedBy: r.invited_by,
+    role: r.role,
+    message: r.message ?? '',
+    status: r.status,
+    createdAt: r.created_at,
+  };
+}
+
+/** Pending invitations addressed to the signed-in user. */
+export async function listIncomingInvitations(userId: string): Promise<InvitationRow[]> {
+  const { data, error } = await db()
+    .from('project_invitations')
+    .select('*, projects(title)')
+    .eq('invited_user_id', userId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  fail(error);
+  return (data ?? []).map(mapInvitation);
+}
+
+/** Invitations the signed-in user has sent for a project they own. */
+export async function listSentInvitations(projectId: string): Promise<InvitationRow[]> {
+  const { data, error } = await db()
+    .from('project_invitations')
+    .select('*, projects(title), invitee:profiles!project_invitations_invited_user_id_fkey(full_name)')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false });
+  fail(error);
+  return (data ?? []).map(mapInvitation);
+}
+
+export async function sendInvitation(projectId: string, invitedUserId: string, invitedBy: string, role: string, message: string) {
+  if (!role.trim()) throw new Error('Choose a role for this person.');
+  if (message.length > 500) throw new Error('Keep the message under 500 characters.');
+  const { error } = await db().from('project_invitations').insert({
+    project_id: projectId, invited_user_id: invitedUserId, invited_by: invitedBy,
+    role: role.trim(), message: message.trim(),
+  });
+  if (error) {
+    if (error.message.includes('duplicate key')) throw new Error('This person already has a pending invitation to this project.');
+    throw new Error(error.message);
+  }
+}
+
+export async function respondToInvitation(invitationId: string, accept: boolean) {
+  const { error } = await db().rpc('respond_to_invitation', { p_invitation: invitationId, p_accept: accept });
+  fail(error);
+}
+
+export async function cancelInvitation(invitationId: string) {
+  const { error } = await db().rpc('cancel_invitation', { p_invitation: invitationId });
+  fail(error);
+}
+
+export interface CandidateProfile {
+  userId: string;
+  name: string;
+  branch: string;
+  college: string;
+  academicYear: string;
+  avatarUrl: string;
+  interests: string[];
+  skills: { name: string; verified: boolean; proficiency: string; isLearningGoal: boolean }[];
+}
+
+/** Students who allow being found, with their Skill Passport entries. RLS hides private profiles. */
+export async function listCandidates(excludeUserId: string): Promise<CandidateProfile[]> {
+  const sb = db();
+  const { data: profiles, error } = await sb
+    .from('profiles')
+    .select('id, full_name, branch, college, academic_year, avatar_url, interests, profile_visibility')
+    .neq('id', excludeUserId)
+    .neq('profile_visibility', 'private')
+    .limit(200);
+  fail(error);
+  const rows = profiles ?? [];
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((p: Row) => p.id as string);
+  const { data: skills, error: sErr } = await sb
+    .from('skill_entries')
+    .select('user_id, name, verification_status, proficiency, is_learning_goal')
+    .in('user_id', ids);
+  fail(sErr);
+
+  const byUser = new Map<string, CandidateProfile['skills']>();
+  for (const s of skills ?? []) {
+    const list = byUser.get(s.user_id) ?? [];
+    list.push({
+      name: s.name, verified: s.verification_status === 'verified',
+      proficiency: s.proficiency, isLearningGoal: !!s.is_learning_goal,
+    });
+    byUser.set(s.user_id, list);
+  }
+
+  return rows.map((p: Row) => ({
+    userId: p.id,
+    name: p.full_name || 'Student',
+    branch: p.branch ?? '',
+    college: p.college ?? '',
+    academicYear: p.academic_year ?? '',
+    avatarUrl: p.avatar_url ?? '',
+    interests: p.interests ?? [],
+    skills: byUser.get(p.id) ?? [],
+  }));
 }
