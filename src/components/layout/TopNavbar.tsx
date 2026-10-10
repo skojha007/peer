@@ -11,13 +11,10 @@ import {
   LogOut,
   FolderKanban,
   Code2,
-  Users,
   Package,
-  Calendar,
   Menu,
   Maximize2,
   Minimize2,
-  Sparkles,
   Flame,
   Camera,
   Activity,
@@ -113,7 +110,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onToggleMobileMenu }) => {
   return (
     <header className="sticky top-0 z-20 bg-[#FAFCF5]/95 backdrop-blur-md border-b border-[#DCE6D2] px-3 sm:px-6 py-2 transition-colors">
       <div className="flex items-center justify-between gap-3 md:gap-4">
-        {/* Left: Mobile hamburger & Campus Pulse */}
+        {/* Left: Mobile hamburger */}
         <div className="flex items-center gap-2.5">
           <button
             onClick={onToggleMobileMenu}
@@ -123,15 +120,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onToggleMobileMenu }) => {
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Engaging Live Campus Pulse Pill (desktop & tablet) */}
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#EAF1DC]/80 border border-[#DCE6D2] text-[11px] font-semibold text-[#173D2A]">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#26783C] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#26783C]" />
-            </span>
-            <span className="hidden xl:inline text-[#687769]">Campus Pulse:</span>
-            <span>48 Builders Active</span>
-          </div>
         </div>
 
         {/* Center: Global Search Bar with Ctrl+K shortcut */}

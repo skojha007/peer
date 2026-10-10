@@ -77,7 +77,6 @@ export const PeerCraftAIMentor: React.FC = () => {
       >
         <div className="relative">
           <Bot className="w-5 h-5 text-[#E4EDCF]" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#EFC66B] rounded-full animate-ping" />
           <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#EFC66B] rounded-full" />
         </div>
         <span className="text-xs font-bold tracking-tight pr-1 hidden sm:inline">
