@@ -22,6 +22,11 @@ import { CodingArenaPage } from './pages/CodingArenaPage';
 import { CampusCreditsPage } from './pages/CampusCreditsPage';
 import { ResourceExchangePage } from './pages/ResourceExchangePage';
 import { SkillPassportPage } from './pages/SkillPassportPage';
+import { PortfolioPage } from './pages/PortfolioPage';
+import { PortfolioProjectFormPage } from './pages/PortfolioProjectFormPage';
+import { PortfolioProjectDetailPage } from './pages/PortfolioProjectDetailPage';
+import { PublicPortfolioPage } from './pages/PublicPortfolioPage';
+import { ReviewQueuePage } from './pages/ReviewQueuePage';
 import { CommunityPage } from './pages/CommunityPage';
 import { MicroGigsPage } from './pages/MicroGigsPage';
 import { EventsPage } from './pages/EventsPage';
@@ -84,6 +89,14 @@ export const App: React.FC = () => {
             <Route path="/resources" element={<ResourceExchangePage />} />
             <Route path="/resources/history" element={<ResourceExchangePage />} />
             <Route path="/skills" element={<SkillPassportPage />} />
+
+            {/* Proof-of-work portfolio */}
+            <Route path="/portfolio" element={<PortfolioPage />} />
+            <Route path="/portfolio/projects/new" element={<PortfolioProjectFormPage />} />
+            <Route path="/portfolio/projects/:projectId" element={<PortfolioProjectDetailPage />} />
+            <Route path="/portfolio/projects/:projectId/edit" element={<PortfolioProjectFormPage />} />
+            <Route path="/portfolio/:userId" element={<PublicPortfolioPage />} />
+            <Route path="/verification-queue" element={<ReviewQueuePage />} />
 
             {/* Community, Gigs, Events */}
             <Route path="/community" element={<CommunityPage />} />

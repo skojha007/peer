@@ -25,6 +25,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Camera,
+  Layers,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { adminUser, initialUser } from '../../data/mockData';
@@ -59,6 +61,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
     { to: '/credits', label: 'Campus Credits', icon: Wallet },
     { to: '/resources', label: 'Resource Exchange', icon: Package },
     { to: '/skills', label: 'Skill Passport', icon: BadgeCheck },
+    { to: '/portfolio', label: 'My Portfolio', icon: Layers },
+    { to: '/verification-queue', label: 'Verification Queue', icon: ShieldCheck },
     { to: '/community', label: 'Community', icon: MessagesSquare },
     { to: '/micro-gigs', label: 'Micro-Gigs', icon: BriefcaseBusiness },
     { to: '/events', label: 'Events & Hackathons', icon: CalendarDays },

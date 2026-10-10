@@ -312,7 +312,7 @@ create policy "evidence delete own" on public.project_evidence for delete to aut
 -- Skills: owner always; others only when the owner's profile is not private.
 drop policy if exists "skills read" on public.skill_entries;
 create policy "skills read" on public.skill_entries for select to authenticated
-  using (user_id = auth.uid() or exists (
+  using (user_id = auth.uid() or public.is_reviewer() or exists (
     select 1 from public.profiles p where p.id = user_id and p.profile_visibility <> 'private'));
 drop policy if exists "skills write own" on public.skill_entries;
 create policy "skills write own" on public.skill_entries for all to authenticated
@@ -331,7 +331,7 @@ create policy "skill evidence write own" on public.skill_evidence for all to aut
 -- Achievements follow the same visibility as skills.
 drop policy if exists "achievements read" on public.achievements;
 create policy "achievements read" on public.achievements for select to authenticated
-  using (user_id = auth.uid() or exists (
+  using (user_id = auth.uid() or public.is_reviewer() or exists (
     select 1 from public.profiles p where p.id = user_id and p.profile_visibility <> 'private'));
 drop policy if exists "achievements write own" on public.achievements;
 create policy "achievements write own" on public.achievements for all to authenticated

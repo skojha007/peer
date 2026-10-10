@@ -102,6 +102,11 @@ SELECT pg_temp.expect_rows($q$SELECT 1 FROM public.verification_reviews WHERE ta
 SELECT pg_temp.expect_error($q$SELECT public.review_verification('project', '10000000-0000-0000-0000-000000000001', 'bogus')$q$,
   'invalid decision is rejected');
 
+-- Reviewers can see skills of private profiles (needed for the review queue).
+SELECT pg_temp.as_user('00000000-0000-0000-0000-0000000000ff');
+SELECT pg_temp.expect_rows($q$SELECT 1 FROM public.skill_entries WHERE user_id='00000000-0000-0000-0000-00000000000a'$q$, 1,
+  'reviewer can read skills of a private profile');
+
 -- Owner edits must not reset verification status silently.
 SELECT pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 SELECT pg_temp.expect_error($q$UPDATE public.projects SET verification_status = 'self_reported' WHERE id = '10000000-0000-0000-0000-000000000001'$q$,
